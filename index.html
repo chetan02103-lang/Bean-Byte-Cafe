@@ -1,0 +1,907 @@
+<!DOCTYPE html>
+< lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bean & Byte — AI Smart Café Hub</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,450;9..144,600;9..144,700;9..144,900&family=Sora:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<style>
+  :root{
+    --bg-void:#140d09;
+    --bg-void-2:#1c130d;
+    --bg-panel:#231810;
+    --cream:#f4ead9;
+    --muted:#c9b39a;
+    --gold:#d9a441;
+    --gold-2:#f0c774;
+    --rust:#c1652f;
+    --line:hsl(35 30% 60% / 0.14);  
+
+    --filter-glass3d: blur(32px) brightness(0.85) saturate(2.5);
+    --color-glass3d: hsl(120 80% 10% / 0.2);
+    --noise-glass3d: url("https://www.transparenttextures.com/patterns/egg-shell.png");
+  }
+
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    background:
+      radial-gradient(ellipse 900px 500px at 15% -10%, hsl(35 60% 20% / 0.35), transparent 60%),
+      radial-gradient(ellipse 800px 600px at 110% 10%, hsl(120 40% 15% / 0.25), transparent 55%),
+      var(--bg-void);
+    color:var(--cream);
+    font-family:'Sora', sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3,.display{
+    font-family:'Fraunces', serif;
+    font-weight:600;
+    letter-spacing:-0.01em;
+    margin:0;
+  }
+  a{color:inherit;}
+  button{font-family:inherit;cursor:pointer;}
+  ::selection{background:var(--gold);color:#241811;}
+  ::-webkit-scrollbar{width:10px;}
+  ::-webkit-scrollbar-thumb{background:hsl(35 30% 30% / 0.6);border-radius:8px;}
+
+  .wrap{max-width:1180px;margin:0 auto;padding:0 28px;}
+
+  /* ---------- glass3d base (as provided) + warm modifier ---------- */
+  .glass3d{
+    --filter-glass3d: blur(32px) brightness(0.85) saturate(2.5);
+    --color-glass3d: hsl(120 80% 10% / 0.2);
+    --noise-glass3d: url("https://www.transparenttextures.com/patterns/egg-shell.png");
+    position:relative;
+    z-index:4;
+    border-radius:20px;
+    box-shadow:
+      0 0 0.75px hsl(205 20% 10% / 0.2),
+      0.7px 0.8px 1.2px -0.4px hsl(205 20% 10% / 0.1),
+      1.3px 1.5px 2.2px -0.8px hsl(205 20% 10% / 0.1),
+      2.3px 2.6px 3.9px -1.2px hsl(205 20% 10% / 0.1),
+      3.9px 4.4px 6.6px -1.7px hsl(205 20% 10% / 0.1),
+      6.5px 7.2px 10.9px -2.1px hsl(205 20% 10% / 0.1),
+      8px 9px 14px -2.5px hsl(205 20% 10% / 0.2);
+  }
+  .glass3d::before{
+    content:"";
+    position:absolute; inset:0;
+    pointer-events:none;
+    border-radius:inherit;
+    overflow:hidden;
+    z-index:3;
+    -webkit-backdrop-filter:var(--filter-glass3d);
+    backdrop-filter:var(--filter-glass3d);
+    background-color:var(--color-glass3d);
+    background-image:var(--noise-glass3d);
+    background-size:100px;
+    background-repeat:repeat;
+  }
+  .glass3d::after{
+    content:"";
+    position:absolute; inset:0;
+    pointer-events:none;
+    border-radius:inherit;
+    overflow:hidden;
+    z-index:5;
+    box-shadow:
+      inset 2px 2px 1px -3px hsl(38 60% 90% / 0.8),
+      inset 4px 4px 2px -6px hsl(38 60% 90% / 0.3),
+      inset 1.5px 1.5px 1.5px -0.75px hsl(38 60% 90% / 0.15),
+      inset 1.5px 1.5px 0.25px hsl(38 60% 90% / 0.03),
+      inset 0 0 0.25px 0.5px hsl(38 60% 90% / 0.03);
+  }
+  .glass3d > *{position:relative; z-index:6;}
+  .glass3d.warm{--color-glass3d: hsl(28 65% 14% / 0.42);}
+  .glass3d.deep{--color-glass3d: hsl(120 55% 8% / 0.5);}
+
+  /* ---------- steam signature motif ---------- */
+  .steamfield{position:absolute; inset:0; overflow:hidden; pointer-events:none; z-index:1; border-radius:inherit;}
+  .steamfield span{
+    position:absolute; bottom:-20px;
+    width:60px; height:140px;
+    background:radial-gradient(closest-side, hsl(38 90% 80% / 0.16), transparent 70%);
+    filter:blur(6px);
+    border-radius:50%;
+    animation:rise 7s ease-in infinite;
+  }
+  .steamfield span:nth-child(1){left:8%; animation-delay:0s;}
+  .steamfield span:nth-child(2){left:35%; animation-delay:2.1s; width:44px;}
+  .steamfield span:nth-child(3){left:62%; animation-delay:4s; width:70px;}
+  .steamfield span:nth-child(4){left:82%; animation-delay:1.2s; width:50px;}
+  @keyframes rise{
+    0%{transform:translateY(0) translateX(0) scale(0.8); opacity:0;}
+    15%{opacity:0.9;}
+    100%{transform:translateY(-260px) translateX(24px) scale(1.4); opacity:0;}
+  }
+  @media (prefers-reduced-motion: reduce){
+    .steamfield span{animation:none; display:none;}
+  }
+
+  /* ---------- nav ---------- */
+  nav{position:sticky; top:0; z-index:50; padding:16px 0;}
+  .navbar{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:12px 22px; margin:0 28px;
+  }
+  .brand{display:flex; align-items:center; gap:10px; font-family:'Fraunces',serif; font-size:1.15rem; font-weight:700; letter-spacing:-0.01em;}
+  .brand span.mark{
+    width:34px; height:34px; border-radius:50%;
+    display:grid; place-items:center;
+    background:linear-gradient(155deg, var(--gold-2), var(--rust));
+    color:#241811; font-size:16px;
+  }
+  .navlinks{display:flex; gap:26px; font-size:0.88rem; color:var(--muted);}
+  .navlinks a{text-decoration:none; transition:color .2s;}
+  .navlinks a:hover{color:var(--gold-2);}
+  .navcta{display:flex; align-items:center; gap:14px;}
+  .cart-btn{
+    position:relative; background:transparent; border:1px solid var(--line);
+    color:var(--cream); padding:9px 16px; border-radius:999px; font-size:0.85rem;
+  }
+  .cart-count{
+    position:absolute; top:-8px; right:-8px; background:var(--rust); color:#fff;
+    font-size:0.65rem; width:19px; height:19px; border-radius:50%; display:grid; place-items:center;
+  }
+  @media(max-width:860px){.navlinks{display:none;}}
+
+  /* ---------- buttons ---------- */
+  .btn{
+    border:none; border-radius:999px; padding:12px 22px; font-size:0.88rem; font-weight:600;
+    display:inline-flex; align-items:center; gap:8px;
+  }
+  .btn-gold{background:linear-gradient(135deg, var(--gold-2), var(--gold)); color:#241811;}
+  .btn-ghost{background:transparent; border:1px solid var(--line); color:var(--cream);}
+  .btn-sm{padding:8px 14px; font-size:0.78rem;}
+  .btn:active{transform:translateY(1px);}
+
+  /* ---------- hero ---------- */
+  .hero{padding:64px 0 40px; position:relative;}
+  .hero-grid{display:grid; grid-template-columns:1.05fr 0.95fr; gap:54px; align-items:center;}
+  .eyebrow{
+    display:inline-flex; align-items:center; gap:8px;
+    font-size:0.72rem; letter-spacing:0.14em; text-transform:uppercase;
+    color:var(--gold-2); border:1px solid hsl(38 70% 60% / 0.3); border-radius:999px;
+    padding:6px 13px; margin-bottom:20px;
+  }
+  .hero h1{font-size:clamp(2.3rem, 4.4vw, 3.6rem); line-height:1.06;}
+  .hero h1 em{font-style:normal; color:var(--gold-2);}
+  .hero p.lead{color:var(--muted); font-size:1.05rem; max-width:480px; margin:20px 0 30px; line-height:1.6;}
+  .hero-actions{display:flex; gap:14px; flex-wrap:wrap;}
+
+  .hero-demo{padding:22px; overflow:hidden;}
+  .demo-head{display:flex; align-items:center; gap:10px; margin-bottom:14px; font-size:0.82rem; color:var(--muted);}
+  .demo-dot{width:8px; height:8px; border-radius:50%; background:#6bd68a; box-shadow:0 0 8px #6bd68a;}
+  .chat-log{display:flex; flex-direction:column; gap:10px; min-height:170px;}
+  .bubble{padding:10px 14px; border-radius:14px; font-size:0.87rem; max-width:88%; line-height:1.45;}
+  .bubble.user{align-self:flex-end; background:hsl(38 60% 40% / 0.28); border:1px solid hsl(38 60% 60% / 0.25);}
+  .bubble.ai{align-self:flex-start; background:hsl(0 0% 100% / 0.06); border:1px solid var(--line);}
+  .chat-input-row{display:flex; gap:8px; margin-top:14px;}
+  .chat-input-row input{
+    flex:1; background:hsl(0 0% 100% / 0.06); border:1px solid var(--line); border-radius:999px;
+    padding:11px 16px; color:var(--cream); font-family:inherit; font-size:0.86rem; outline:none;
+  }
+  .chat-input-row input::placeholder{color:var(--muted);}
+  .chat-input-row button{
+    background:var(--gold); border:none; color:#241811; border-radius:999px; padding:0 18px; font-weight:700;
+  }
+  .chips{display:flex; gap:8px; flex-wrap:wrap; margin-top:12px;}
+  .chip{
+    font-size:0.74rem; color:var(--muted); border:1px solid var(--line); border-radius:999px;
+    padding:6px 12px; background:hsl(0 0% 100% / 0.03);
+  }
+  .chip:hover{color:var(--gold-2); border-color:hsl(38 70% 60% / 0.35); cursor:pointer;}
+
+  /* ---------- section shell ---------- */
+  section{padding:76px 0;}
+  .sec-head{display:flex; align-items:flex-end; justify-content:space-between; margin-bottom:34px; gap:20px; flex-wrap:wrap;}
+  .sec-head .tag{font-size:0.72rem; letter-spacing:0.14em; text-transform:uppercase; color:var(--gold-2); margin-bottom:8px; display:block;}
+  .sec-head h2{font-size:clamp(1.6rem, 2.6vw, 2.3rem);}
+  .sec-head p{color:var(--muted); max-width:460px; font-size:0.92rem; margin-top:8px;}
+
+  /* ---------- menu ---------- */
+  .menu-filters{display:flex; gap:10px; margin-bottom:26px; flex-wrap:wrap;}
+  .filter-btn{
+    border:1px solid var(--line); background:transparent; color:var(--muted); border-radius:999px;
+    padding:8px 16px; font-size:0.8rem;
+  }
+  .filter-btn.active{background:var(--gold); color:#241811; border-color:var(--gold); font-weight:700;}
+  .menu-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:20px;}
+  .item-card{padding:20px; display:flex; flex-direction:column; gap:10px;}
+  .item-top{display:flex; justify-content:space-between; align-items:flex-start;}
+  .item-emoji{
+    width:52px; height:52px; border-radius:14px; display:grid; place-items:center; font-size:24px;
+    background:linear-gradient(155deg, hsl(38 60% 30% / 0.5), hsl(20 50% 18% / 0.5));
+  }
+  .item-price{font-family:'Fraunces',serif; font-weight:700; color:var(--gold-2); font-size:1.05rem;}
+  .item-name{font-size:1.02rem; font-weight:600;}
+  .item-desc{color:var(--muted); font-size:0.82rem; line-height:1.5;}
+  .tag-row{display:flex; gap:6px; flex-wrap:wrap;}
+  .tagpill{font-size:0.66rem; padding:3px 9px; border-radius:999px; border:1px solid var(--line); color:var(--muted);}
+  .tagpill.veg{color:#8fd18f; border-color:hsl(110 40% 50% / 0.35);}
+  .tagpill.spicy{color:#e8946a; border-color:hsl(20 60% 55% / 0.35);}
+  .tagpill.best{color:var(--gold-2); border-color:hsl(38 70% 60% / 0.35);}
+  .add-btn{
+    margin-top:auto; background:transparent; border:1px solid hsl(38 70% 60% / 0.4); color:var(--gold-2);
+    border-radius:999px; padding:8px 0; font-size:0.8rem; font-weight:600;
+  }
+  .add-btn:hover{background:var(--gold); color:#241811;}
+  @media(max-width:900px){.menu-grid{grid-template-columns:repeat(2,1fr);}}
+  @media(max-width:600px){.menu-grid{grid-template-columns:1fr;} .hero-grid{grid-template-columns:1fr;}}
+
+  /* ---------- mood / weather ---------- */
+  .mood-grid{display:grid; grid-template-columns:0.9fr 1.1fr; gap:24px;}
+  .mood-panel{padding:26px;}
+  .weather-tabs{display:flex; gap:10px; margin-bottom:18px;}
+  .wtab{flex:1; border:1px solid var(--line); background:transparent; color:var(--muted); padding:12px; border-radius:14px; font-size:0.85rem; text-align:center;}
+  .wtab.active{background:linear-gradient(135deg, hsl(38 60% 30% / 0.5), hsl(20 50% 18% / 0.5)); color:var(--cream); border-color:hsl(38 70% 60% / 0.4);}
+  .rec-result{display:flex; gap:16px; align-items:center; margin-top:18px; padding-top:18px; border-top:1px solid var(--line);}
+  .rec-emoji{font-size:2.4rem;}
+  .rec-title{font-family:'Fraunces',serif; font-weight:700; font-size:1.15rem; color:var(--gold-2);}
+  .rec-sub{color:var(--muted); font-size:0.82rem; margin-top:3px;}
+
+  .mood-form label{display:block; font-size:0.78rem; color:var(--muted); margin:14px 0 8px;}
+  .seg{display:flex; gap:8px;}
+  .seg button{flex:1; border:1px solid var(--line); background:transparent; color:var(--muted); padding:10px; border-radius:12px; font-size:0.82rem;}
+  .seg button.active{background:hsl(38 60% 30% / 0.4); color:var(--cream); border-color:hsl(38 70% 60% / 0.4);}
+  input[type=range]{width:100%; accent-color:var(--gold);}
+
+  /* ---------- two column: reserve / order ---------- */
+  .two-col{display:grid; grid-template-columns:1fr 1fr; gap:24px;}
+  .panel{padding:26px;}
+  .field{margin-bottom:14px;}
+  .field label{display:block; font-size:0.78rem; color:var(--muted); margin-bottom:6px;}
+  .field input, .field select{
+    width:100%; background:hsl(0 0% 100% / 0.06); border:1px solid var(--line); border-radius:10px;
+    padding:11px 12px; color:var(--cream); font-family:inherit; font-size:0.88rem; outline:none;
+  }
+  .field-row{display:grid; grid-template-columns:1fr 1fr; gap:12px;}
+  .confirm-box{
+    margin-top:16px; padding:14px; border-radius:12px; background:hsl(120 45% 25% / 0.18);
+    border:1px solid hsl(120 40% 50% / 0.3); font-size:0.85rem; display:none;
+  }
+  .cart-list{display:flex; flex-direction:column; gap:10px; max-height:230px; overflow:auto; margin-bottom:14px;}
+  .cart-row{display:flex; justify-content:space-between; align-items:center; font-size:0.85rem; border-bottom:1px dashed var(--line); padding-bottom:8px;}
+  .cart-row button{background:none; border:none; color:var(--rust); font-size:1rem;}
+  .cart-total{display:flex; justify-content:space-between; font-weight:700; font-size:1rem; padding-top:10px; border-top:1px solid var(--line);}
+  .table-actions{display:flex; gap:8px; flex-wrap:wrap; margin-top:14px;}
+  .pill-btn{border:1px solid var(--line); background:transparent; color:var(--muted); border-radius:999px; padding:7px 13px; font-size:0.75rem;}
+  .pill-btn:hover{color:var(--gold-2);}
+  .empty-note{color:var(--muted); font-size:0.85rem;}
+
+  /* ---------- loyalty + reviews ---------- */
+  .loyal-grid{display:grid; grid-template-columns:0.85fr 1.15fr; gap:24px;}
+  .loyalty-card{padding:26px; background:linear-gradient(150deg, hsl(38 55% 22% / 0.5), hsl(20 50% 12% / 0.5));}
+  .loyalty-top{display:flex; justify-content:space-between; align-items:center;}
+  .loyalty-pts{font-family:'Fraunces',serif; font-size:2.2rem; font-weight:700; color:var(--gold-2); margin-top:6px;}
+  .bar-track{height:8px; background:hsl(0 0% 100% / 0.1); border-radius:999px; margin-top:14px; overflow:hidden;}
+  .bar-fill{height:100%; background:linear-gradient(90deg, var(--gold), var(--gold-2)); width:60%;}
+  .reviews-grid{display:grid; grid-template-columns:1fr 1fr; gap:16px;}
+  .review-card{padding:18px;}
+  .stars{color:var(--gold-2); font-size:0.9rem; margin-bottom:8px;}
+  .review-name{font-size:0.8rem; color:var(--muted); margin-top:10px;}
+
+  /* ---------- dashboard ---------- */
+  .dash-toggle-row{display:flex; justify-content:flex-end; margin-bottom:18px;}
+  #dashboard{display:none;}
+  .kpis{display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:22px;}
+  .kpi{padding:18px;}
+  .kpi .num{font-family:'Fraunces',serif; font-size:1.6rem; font-weight:700; color:var(--gold-2);}
+  .kpi .lbl{font-size:0.74rem; color:var(--muted); margin-top:4px;}
+  .charts-row{display:grid; grid-template-columns:1.3fr 1fr; gap:18px;}
+  .chart-panel{padding:20px;}
+  .chart-panel h3{font-size:0.95rem; margin-bottom:12px; font-weight:600;}
+  .alert-row{display:flex; justify-content:space-between; font-size:0.82rem; padding:8px 0; border-bottom:1px dashed var(--line); color:var(--muted);}
+  .alert-row span.b{color:#e8946a;}
+  @media(max-width:900px){.kpis{grid-template-columns:repeat(2,1fr);} .charts-row{grid-template-columns:1fr;} .two-col,.loyal-grid,.mood-grid,.reviews-grid{grid-template-columns:1fr;}}
+
+  /* ---------- offers ticker ---------- */
+  .ticker-wrap{overflow:hidden; padding:16px 0; border-top:1px solid var(--line); border-bottom:1px solid var(--line);}
+  .ticker{display:flex; gap:40px; white-space:nowrap; animation:scroll 22s linear infinite; width:max-content;}
+  .ticker span{font-size:0.85rem; color:var(--gold-2); display:flex; align-items:center; gap:10px;}
+  @keyframes scroll{from{transform:translateX(0);} to{transform:translateX(-50%);}}
+
+  /* ---------- footer ---------- */
+  footer{padding:60px 0 40px;}
+  .roadmap-chips{display:flex; flex-wrap:wrap; gap:8px; margin:20px 0 30px;}
+  .fine{color:var(--muted); font-size:0.78rem; margin-top:30px;}
+
+  /* toast */
+  #toast{
+    position:fixed; bottom:26px; left:50%; transform:translateX(-50%) translateY(140%);
+    padding:14px 22px; z-index:200; font-size:0.85rem; transition:transform .35s ease; min-width:260px; text-align:center;
+  }
+  #toast.show{transform:translateX(-50%) translateY(0);}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="navbar glass3d warm">
+    <div class="brand"><span class="mark">☕</span> Bean &amp; Byte</div>
+    <div class="navlinks">
+      <a href="#concierge">Concierge</a>
+      <a href="#menu">Menu</a>
+      <a href="#mood">Mood &amp; Weather</a>
+      <a href="#reserve">Reserve</a>
+      <a href="#loyalty">Loyalty</a>
+      <a href="#dashboard-sec">Owner view</a>
+    </div>
+    <div class="navcta">
+      <button class="cart-btn" onclick="document.getElementById('order').scrollIntoView({behavior:'smooth'})">
+        🧺 Order <span class="cart-count" id="cartCount">0</span>
+      </button>
+    </div>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="wrap hero-grid">
+    <div>
+      <span class="eyebrow">● AI Smart Café Hub</span>
+      <h1>The café that <em>knows your order</em><br> before you sit down.</h1>
+      <p class="lead">One QR code, one glass panel — menu, table reservation, live ordering and a concierge that actually knows what's spicy, what's vegan, and what beats the rain.</p>
+      <div class="hero-actions">
+        <button class="btn btn-gold" onclick="document.getElementById('menu').scrollIntoView({behavior:'smooth'})">Scan the menu ↓</button>
+        <button class="btn btn-ghost" onclick="document.getElementById('concierge').scrollIntoView({behavior:'smooth'})">Talk to the concierge</button>
+      </div>
+    </div>
+
+    <div class="hero-demo glass3d deep">
+      <div class="steamfield"><span></span><span></span><span></span><span></span></div>
+      <div class="demo-head"><span class="demo-dot"></span> Live concierge — try it</div>
+      <div class="chat-log" id="heroChatLog"></div>
+      <div class="chat-input-row">
+        <input id="heroChatInput" type="text" placeholder="Recommend a coffee under ₹200…" onkeydown="if(event.key==='Enter')sendHeroChat()">
+        <button onclick="sendHeroChat()">Ask</button>
+      </div>
+      <div class="chips">
+        <span class="chip" onclick="quickAsk('vegan')">vegan options</span>
+        <span class="chip" onclick="quickAsk('spicy')">what's spicy</span>
+        <span class="chip" onclick="quickAsk('rain')">rainy day pick</span>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="wrap"><div class="ticker-wrap glass3d warm" style="padding:14px 22px;">
+  <div class="ticker" id="offerTicker"></div>
+</div></div>
+
+<!-- CONCIERGE -->
+<section id="concierge">
+  <div class="wrap">
+    <div class="sec-head">
+      <div>
+        <span class="tag">01 — Ask anything</span>
+        <h2>Your AI concierge, full size</h2>
+        <p>Ask about diets, spice level, budget, or just say how you're feeling — it reads the menu so guests don't have to.</p>
+      </div>
+    </div>
+    <div class="hero-demo glass3d warm" style="max-width:640px;">
+      <div class="steamfield"><span></span><span></span><span></span><span></span></div>
+      <div class="demo-head"><span class="demo-dot"></span> Concierge</div>
+      <div class="chat-log" id="mainChatLog"></div>
+      <div class="chat-input-row">
+        <input id="mainChatInput" type="text" placeholder="Ask the concierge…" onkeydown="if(event.key==='Enter')sendMainChat()">
+        <button onclick="sendMainChat()">Ask</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- MENU -->
+<section id="menu">
+  <div class="wrap">
+    <div class="sec-head">
+      <div>
+        <span class="tag">02 — QR Menu</span>
+        <h2>Scan, browse, add to order</h2>
+        <p>Every card doubles as your ordering cart — tap add, watch the basket total climb.</p>
+      </div>
+    </div>
+    <div class="menu-filters" id="menuFilters"></div>
+    <div class="menu-grid" id="menuGrid"></div>
+  </div>
+</section>
+
+<!-- MOOD / WEATHER -->
+<section id="mood">
+  <div class="wrap">
+    <div class="sec-head">
+      <div>
+        <span class="tag">03 — Feels-like ordering</span>
+        <h2>Recommend by weather, or by mood</h2>
+        <p>Two ways in: pick the sky outside, or answer three quick questions about how you're feeling.</p>
+      </div>
+    </div>
+    <div class="mood-grid">
+      <div class="mood-panel glass3d warm">
+        <h3 style="font-size:1rem; margin-bottom:14px;">☁️ What's the weather doing?</h3>
+        <div class="weather-tabs">
+          <button class="wtab active" data-w="rain" onclick="setWeather('rain')">🌧️ Rain</button>
+          <button class="wtab" data-w="summer" onclick="setWeather('summer')">☀️ Summer</button>
+          <button class="wtab" data-w="evening" onclick="setWeather('evening')">🌆 Evening</button>
+        </div>
+        <div class="rec-result">
+          <div class="rec-emoji" id="wEmoji">☕</div>
+          <div>
+            <div class="rec-title" id="wTitle">Coffee + Brownie</div>
+            <div class="rec-sub" id="wSub">Perfect for a rainy afternoon window seat.</div>
+          </div>
+        </div>
+      </div>
+      <div class="mood-panel glass3d warm mood-form">
+        <h3 style="font-size:1rem;">🎭 Or tell us your mood</h3>
+        <label>Sweet or spicy?</label>
+        <div class="seg" id="segTaste">
+          <button class="active" data-v="sweet">Sweet</button>
+          <button data-v="spicy">Spicy</button>
+        </div>
+        <label>Hot or cold?</label>
+        <div class="seg" id="segTemp">
+          <button class="active" data-v="hot">Hot</button>
+          <button data-v="cold">Cold</button>
+        </div>
+        <label>Budget — up to ₹<span id="budgetVal">250</span></label>
+        <input type="range" min="80" max="400" step="10" value="250" id="budgetRange">
+        <div class="rec-result">
+          <div class="rec-emoji" id="mEmoji">🍫</div>
+          <div>
+            <div class="rec-title" id="mTitle">Cappuccino + Chocolate Cake</div>
+            <div class="rec-sub" id="mSub">Matched to a stressed, sweet, hot craving under ₹250.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- RESERVE + ORDER -->
+<section id="reserve">
+  <div class="wrap">
+    <div class="sec-head">
+      <div>
+        <span class="tag">04 — Book &amp; order</span>
+        <h2>Hold a table, or send the order straight to the kitchen</h2>
+      </div>
+    </div>
+    <div class="two-col">
+      <div class="panel glass3d warm">
+        <h3 style="font-size:1.05rem; margin-bottom:16px;">Reserve a table</h3>
+        <div class="field-row">
+          <div class="field"><label>Name</label><input id="resName" type="text" placeholder="Your name"></div>
+          <div class="field"><label>Guests</label><input id="resGuests" type="number" min="1" max="12" value="2"></div>
+        </div>
+        <div class="field-row">
+          <div class="field"><label>Date</label><input id="resDate" type="date"></div>
+          <div class="field"><label>Time</label><input id="resTime" type="time"></div>
+        </div>
+        <button class="btn btn-gold" style="width:100%; justify-content:center;" onclick="reserveTable()">Confirm reservation</button>
+        <div class="confirm-box" id="resConfirm"></div>
+      </div>
+
+      <div class="panel glass3d warm" id="order">
+        <h3 style="font-size:1.05rem; margin-bottom:16px;">Your order</h3>
+        <div class="cart-list" id="cartList"><div class="empty-note">Nothing yet — add something from the menu above.</div></div>
+        <div class="cart-total"><span>Total</span><span id="cartTotal">₹0</span></div>
+        <button class="btn btn-gold" style="width:100%; justify-content:center; margin-top:14px;" onclick="checkout()">Pay &amp; send to kitchen</button>
+        <div class="table-actions">
+          <button class="pill-btn" onclick="toast('🔔 Waiter is on the way to Table 4')">Call waiter</button>
+          <button class="pill-btn" onclick="toast('💧 Water is coming right up')">Request water</button>
+          <button class="pill-btn" onclick="toast('🧾 Bill will be at your table shortly')">Request bill</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- LOYALTY + REVIEWS -->
+<section id="loyalty">
+  <div class="wrap">
+    <div class="sec-head">
+      <div>
+        <span class="tag">05 — Remembered, not just served</span>
+        <h2>Loyalty &amp; what guests are saying</h2>
+      </div>
+    </div>
+    <div class="loyal-grid">
+      <div class="loyalty-card glass3d deep">
+        <div class="steamfield"><span></span><span></span><span></span></div>
+        <div class="loyalty-top">
+          <div>
+            <div style="font-size:0.85rem; color:var(--muted);">Welcome back,</div>
+            <div style="font-family:'Fraunces',serif; font-size:1.3rem; font-weight:700;">Chetan 👋</div>
+          </div>
+          <div style="font-size:1.8rem;">🎁</div>
+        </div>
+        <div class="loyalty-pts">120 pts</div>
+        <div class="bar-track"><div class="bar-fill"></div></div>
+        <div style="font-size:0.78rem; color:var(--muted); margin-top:8px;">80 points to your next free pastry</div>
+        <div style="margin-top:16px; font-size:0.85rem; border-top:1px solid var(--line); padding-top:14px;">
+          Your usual: <strong>Cold Coffee + Garlic Bread</strong>
+          <div style="margin-top:8px;"><button class="pill-btn" onclick="quickAddUsual()">Reorder usual</button></div>
+        </div>
+      </div>
+      <div class="reviews-grid" id="reviewsGrid"></div>
+    </div>
+  </div>
+</section>
+
+<!-- DASHBOARD -->
+<section id="dashboard-sec">
+  <div class="wrap">
+    <div class="sec-head">
+      <div>
+        <span class="tag">06 — For the owner</span>
+        <h2>One dashboard, the whole café</h2>
+        <p>Sales, best sellers, low stock — the numbers the till never shows you.</p>
+      </div>
+    </div>
+    <div class="dash-toggle-row">
+      <button class="btn btn-ghost" id="dashBtn" onclick="toggleDash()">Open owner view</button>
+    </div>
+    <div id="dashboard">
+      <div class="kpis">
+        <div class="kpi glass3d warm"><div class="num">₹18,420</div><div class="lbl">Revenue today</div></div>
+        <div class="kpi glass3d warm"><div class="num">146</div><div class="lbl">Orders today</div></div>
+        <div class="kpi glass3d warm"><div class="num">6.4 min</div><div class="lbl">Avg. wait time</div></div>
+        <div class="kpi glass3d warm"><div class="num">3</div><div class="lbl">Low stock alerts</div></div>
+      </div>
+      <div class="charts-row">
+        <div class="chart-panel glass3d warm">
+          <h3>Sales — last 7 days</h3>
+          <canvas id="salesChart" height="150"></canvas>
+        </div>
+        <div class="chart-panel glass3d warm">
+          <h3>Best sellers</h3>
+          <canvas id="itemsChart" height="150"></canvas>
+          <div style="margin-top:16px;">
+            <div class="alert-row"><span>Milk</span><span class="b">Low — 2.1 L left</span></div>
+            <div class="alert-row"><span>Coffee beans</span><span class="b">Low — 800 g left</span></div>
+            <div class="alert-row"><span>Bread</span><span>Expires tomorrow</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div class="panel glass3d deep">
+      <span class="tag" style="display:block; margin-bottom:8px;">Where this grows next</span>
+      <h2 style="font-size:1.4rem;">This hub is Module 1 of Café OS ☕</h2>
+      <p style="color:var(--muted); font-size:0.9rem; max-width:560px; margin-top:10px;">Kitchen order display, sales forecasting, inventory + waste tracking, feedback heatmaps and an AI social media generator all plug into the same glass panels.</p>
+      <div class="roadmap-chips">
+        <span class="chip">📦 Inventory tracker</span>
+        <span class="chip">📈 Sales predictor</span>
+        <span class="chip">👨‍🍳 Kitchen display</span>
+        <span class="chip">⭐ Feedback heatmap</span>
+        <span class="chip">📢 Social generator</span>
+        <span class="chip">🎟️ Community events</span>
+      </div>
+    </div>
+    <div class="fine">Bean &amp; Byte — AI Smart Café Hub. Built as a front-end concept demo; connect a real menu, payments and an AI API to take this live.</div>
+  </div>
+</footer>
+
+<div id="toast" class="glass3d deep"></div>
+
+<script>
+/* ---------------- data ---------------- */
+const menuItems = [
+  {id:1, name:"Filter Coffee", price:120, tags:["veg","best"], emoji:"☕", desc:"South-Indian style, strong and frothy."},
+  {id:2, name:"Cold Coffee", price:160, tags:["veg","best"], emoji:"🥤", desc:"Blended, iced, topped with cream."},
+  {id:3, name:"Garlic Bread", price:140, tags:["veg"], emoji:"🍞", desc:"Toasted, buttery, herby."},
+  {id:4, name:"Paneer Tikka Wrap", price:190, tags:["veg","spicy"], emoji:"🌯", desc:"Grilled paneer, mint chutney, char."},
+  {id:5, name:"Cappuccino", price:150, tags:["veg"], emoji:"☕", desc:"Silky microfoam, single shot."},
+  {id:6, name:"Chocolate Cake", price:170, tags:["veg","best"], emoji:"🍰", desc:"Dark, dense, barely-sweet."},
+  {id:7, name:"Spicy Arrabbiata Pasta", price:220, tags:["veg","spicy"], emoji:"🍝", desc:"Chilli, garlic, slow-cooked tomato."},
+  {id:8, name:"Vegan Buddha Bowl", price:230, tags:["vegan"], emoji:"🥗", desc:"Quinoa, roasted veg, tahini."},
+  {id:9, name:"Pizza Combo", price:280, tags:["veg","best"], emoji:"🍕", desc:"Wood-fired margherita + garlic dip."},
+  {id:10, name:"Vegan Oat Latte", price:180, tags:["vegan"], emoji:"🌱", desc:"Oat milk, double shot, no dairy."},
+  {id:11, name:"Masala Chai", price:80, tags:["veg"], emoji:"🍵", desc:"Spiced, slow-brewed, classic."},
+  {id:12, name:"Brownie à la Mode", price:190, tags:["veg","best"], emoji:"🍫", desc:"Warm brownie, cold vanilla scoop."},
+];
+
+const reviews = [
+  {name:"Ananya R.", stars:5, text:"The concierge actually got my vegan order right on the first try — small thing, big win."},
+  {name:"Rahul K.", stars:4, text:"Table was ready the second we walked in. QR ordering meant zero waiting for the waiter."},
+  {name:"Meera S.", stars:5, text:"Rainy Tuesday, it suggested coffee and brownie without me asking. Correct call."},
+  {name:"Devansh P.", stars:4, text:"Loyalty points actually add up fast. Got a free pastry within two weeks."},
+];
+
+const offers = [
+  "☔ Rainy day: Coffee + Brownie combo at ₹220",
+  "🎂 Birthday this month? Free slice of cake",
+  "⭐ 2x loyalty points on all cold coffees today",
+  "🌙 After 6 PM: Pizza combo for ₹250",
+];
+
+let cart = {}; // id -> qty
+let currentWeather = "rain";
+
+/* ---------------- render: ticker ---------------- */
+document.getElementById('offerTicker').innerHTML =
+  [...offers, ...offers].map(o => `<span>${o}</span>`).join("");
+
+/* ---------------- render: menu ---------------- */
+const tagMeta = {veg:{label:"Veg", cls:"veg"}, vegan:{label:"Vegan", cls:"veg"}, spicy:{label:"Spicy", cls:"spicy"}, best:{label:"Bestseller", cls:"best"}};
+let activeFilter = "all";
+
+function renderFilters(){
+  const cats = ["all","veg","vegan","spicy","best"];
+  const labels = {all:"All", veg:"Veg", vegan:"Vegan", spicy:"Spicy", best:"Bestsellers"};
+  document.getElementById('menuFilters').innerHTML = cats.map(c =>
+    `<button class="filter-btn ${c===activeFilter?'active':''}" onclick="setFilter('${c}')">${labels[c]}</button>`
+  ).join("");
+}
+function setFilter(c){ activeFilter = c; renderFilters(); renderMenu(); }
+
+function renderMenu(){
+  const items = menuItems.filter(i => activeFilter==="all" || i.tags.includes(activeFilter));
+  document.getElementById('menuGrid').innerHTML = items.map(i => `
+    <div class="item-card glass3d warm">
+      <div class="item-top">
+        <div class="item-emoji">${i.emoji}</div>
+        <div class="item-price">₹${i.price}</div>
+      </div>
+      <div class="item-name">${i.name}</div>
+      <div class="item-desc">${i.desc}</div>
+      <div class="tag-row">${i.tags.map(t=>`<span class="tagpill ${tagMeta[t].cls}">${tagMeta[t].label}</span>`).join("")}</div>
+      <button class="add-btn" onclick="addToCart(${i.id})">Add to order</button>
+    </div>
+  `).join("");
+}
+renderFilters(); renderMenu();
+
+/* ---------------- render: reviews ---------------- */
+document.getElementById('reviewsGrid').innerHTML = reviews.map(r => `
+  <div class="review-card glass3d warm">
+    <div class="stars">${"★".repeat(r.stars)}${"☆".repeat(5-r.stars)}</div>
+    <div style="font-size:0.85rem; color:var(--muted); line-height:1.5;">${r.text}</div>
+    <div class="review-name">— ${r.name}</div>
+  </div>
+`).join("");
+
+/* ---------------- cart ---------------- */
+function addToCart(id){
+  cart[id] = (cart[id]||0) + 1;
+  renderCart();
+  toast(`Added ${menuItems.find(m=>m.id===id).name} to your order`);
+}
+function removeFromCart(id){
+  delete cart[id];
+  renderCart();
+}
+function quickAddUsual(){
+  addToCart(2); addToCart(3);
+}
+function renderCart(){
+  const ids = Object.keys(cart);
+  const list = document.getElementById('cartList');
+  const countEl = document.getElementById('cartCount');
+  let total = 0;
+  let count = 0;
+  if(ids.length===0){
+    list.innerHTML = '<div class="empty-note">Nothing yet — add something from the menu above.</div>';
+  } else {
+    list.innerHTML = ids.map(id=>{
+      const item = menuItems.find(m=>m.id==id);
+      const qty = cart[id];
+      total += item.price*qty;
+      count += qty;
+      return `<div class="cart-row"><span>${item.emoji} ${item.name} ×${qty}</span><span style="display:flex; align-items:center; gap:10px;">₹${item.price*qty} <button onclick="removeFromCart(${id})">✕</button></span></div>`;
+    }).join("");
+  }
+  document.getElementById('cartTotal').textContent = `₹${total}`;
+  countEl.textContent = count;
+}
+function checkout(){
+  if(Object.keys(cart).length===0){ toast("Add something to order first"); return; }
+  const orderId = "BB-" + Math.floor(1000+Math.random()*9000);
+  toast(`✅ Order ${orderId} sent to the kitchen — ready in ~9 min`);
+  cart = {};
+  renderCart();
+}
+
+/* ---------------- reservation ---------------- */
+function reserveTable(){
+  const name = document.getElementById('resName').value || "Guest";
+  const guests = document.getElementById('resGuests').value || 2;
+  const date = document.getElementById('resDate').value || "today";
+  const time = document.getElementById('resTime').value || "7:00 PM";
+  const box = document.getElementById('resConfirm');
+  const resId = "RSV-" + Math.floor(100+Math.random()*900);
+  box.style.display = "block";
+  box.innerHTML = `🎉 Table held, <strong>${name}</strong> — ${guests} guests on ${date} at ${time}. Reference <strong>${resId}</strong>.`;
+}
+
+/* ---------------- weather recommendation ---------------- */
+const weatherRec = {
+  rain:{emoji:"☕", title:"Coffee + Brownie", sub:"Perfect for a rainy afternoon window seat."},
+  summer:{emoji:"🥤", title:"Cold Coffee + Sandwich", sub:"Cooling combo for a hot afternoon."},
+  evening:{emoji:"🍕", title:"Pizza Combo", sub:"Winding-down evening pick, best after 6 PM."},
+};
+function setWeather(w){
+  currentWeather = w;
+  document.querySelectorAll('.wtab').forEach(b=>b.classList.toggle('active', b.dataset.w===w));
+  const r = weatherRec[w];
+  document.getElementById('wEmoji').textContent = r.emoji;
+  document.getElementById('wTitle').textContent = r.title;
+  document.getElementById('wSub').textContent = r.sub;
+}
+
+/* ---------------- mood recommendation ---------------- */
+let mood = {taste:"sweet", temp:"hot", budget:250};
+function bindSeg(id, key){
+  document.getElementById(id).querySelectorAll('button').forEach(b=>{
+    b.onclick = () => {
+      document.getElementById(id).querySelectorAll('button').forEach(x=>x.classList.remove('active'));
+      b.classList.add('active');
+      mood[key] = b.dataset.v;
+      updateMood();
+    };
+  });
+}
+bindSeg('segTaste','taste');
+bindSeg('segTemp','temp');
+document.getElementById('budgetRange').addEventListener('input', e=>{
+  mood.budget = +e.target.value;
+  document.getElementById('budgetVal').textContent = mood.budget;
+  updateMood();
+});
+function updateMood(){
+  const pool = menuItems.filter(i => i.price <= mood.budget);
+  let pick;
+  if(mood.taste==="spicy") pick = pool.find(i=>i.tags.includes("spicy")) || pool[0];
+  else pick = pool.find(i=>["Chocolate Cake","Brownie à la Mode","Cappuccino"].includes(i.name)) || pool[0];
+  if(mood.temp==="cold") pick = pool.find(i=>i.name.toLowerCase().includes("cold")) || pick;
+  if(!pick) pick = menuItems[0];
+  document.getElementById('mEmoji').textContent = pick.emoji;
+  document.getElementById('mTitle').textContent = pick.name;
+  document.getElementById('mSub').textContent = `Matched to a ${mood.taste}, ${mood.temp} craving under ₹${mood.budget}.`;
+}
+updateMood();
+
+/* ---------------- chatbot ---------------- */
+function botReply(q){
+  const t = q.toLowerCase();
+  if(t.includes("vegan")){
+    const items = menuItems.filter(i=>i.tags.includes("vegan")).map(i=>i.name).join(", ");
+    return `We've got a few: ${items}. Want me to add one to your order?`;
+  }
+  if(t.includes("spicy") || t.includes("spice")){
+    const items = menuItems.filter(i=>i.tags.includes("spicy")).map(i=>i.name).join(", ");
+    return `On the spicier side: ${items}.`;
+  }
+  if(t.includes("rain")){
+    return "On a rainy day I'd go Coffee + Brownie — warm, quick comfort.";
+  }
+  if(t.includes("summer") || t.includes("hot outside")){
+    return "For summer heat, try Cold Coffee + Sandwich — cools you down fast.";
+  }
+  const under = t.match(/under\s*₹?\s*(\d+)/) || t.match(/(\d+)\s*rupees?/) || t.match(/budget.*?(\d+)/);
+  if(under){
+    const cap = parseInt(under[1]);
+    const pick = menuItems.filter(i=>i.price<=cap).sort((a,b)=>b.price-a.price)[0];
+    return pick ? `Under ₹${cap}, go for ${pick.name} at ₹${pick.price}.` : `Nothing quite fits under ₹${cap} — try raising the budget a little.`;
+  }
+  if(t.includes("coffee")){
+    return "Filter Coffee (₹120) is the house favourite, Cold Coffee (₹160) if you want it iced.";
+  }
+  if(t.includes("best") || t.includes("popular") || t.includes("recommend")){
+    return "Most-ordered today: Filter Coffee, Cold Coffee, Pizza Combo and Chocolate Cake.";
+  }
+  if(t.includes("book") || t.includes("reserve") || t.includes("table")){
+    return "I can hold you a table — scroll down to the reservation panel and drop in your details.";
+  }
+  return "Good question — I can help with dietary options, spice level, budget picks, or a weather-based recommendation. Try asking about vegan options or a coffee under ₹200.";
+}
+
+function pushBubble(logId, text, who){
+  const log = document.getElementById(logId);
+  const div = document.createElement('div');
+  div.className = `bubble ${who}`;
+  div.textContent = text;
+  log.appendChild(div);
+  log.scrollTop = log.scrollHeight;
+}
+
+function seedChat(logId){
+  pushBubble(logId, "Recommend a coffee under ₹200", "user");
+  pushBubble(logId, botReply("Recommend a coffee under ₹200"), "ai");
+}
+seedChat('heroChatLog');
+seedChat('mainChatLog');
+
+function sendHeroChat(){
+  const input = document.getElementById('heroChatInput');
+  if(!input.value.trim()) return;
+  pushBubble('heroChatLog', input.value, "user");
+  const reply = botReply(input.value);
+  input.value = "";
+  setTimeout(()=>pushBubble('heroChatLog', reply, "ai"), 300);
+}
+function sendMainChat(){
+  const input = document.getElementById('mainChatInput');
+  if(!input.value.trim()) return;
+  pushBubble('mainChatLog', input.value, "user");
+  const reply = botReply(input.value);
+  input.value = "";
+  setTimeout(()=>pushBubble('mainChatLog', reply, "ai"), 300);
+}
+function quickAsk(kind){
+  const map = {vegan:"Do you have vegan options?", spicy:"What's spicy?", rain:"What's good on a rainy day?"};
+  pushBubble('heroChatLog', map[kind], "user");
+  setTimeout(()=>pushBubble('heroChatLog', botReply(map[kind]), "ai"), 300);
+}
+
+/* ---------------- toast ---------------- */
+let toastTimer;
+function toast(msg){
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>el.classList.remove('show'), 2800);
+}
+
+/* ---------------- dashboard ---------------- */
+let dashOpen = false, chartsBuilt = false;
+function toggleDash(){
+  dashOpen = !dashOpen;
+  document.getElementById('dashboard').style.display = dashOpen ? 'block' : 'none';
+  document.getElementById('dashBtn').textContent = dashOpen ? 'Close owner view' : 'Open owner view';
+  if(dashOpen && !chartsBuilt){ buildCharts(); chartsBuilt = true; }
+}
+function buildCharts(){
+  const gold = "#d9a441", gold2="#f0c774", muted="#c9b39a";
+  new Chart(document.getElementById('salesChart'), {
+    type:'line',
+    data:{
+      labels:['Mon','Tue','Wed','Thu','Fri','Sat','Sun'],
+      datasets:[{
+        label:'Revenue (₹)',
+        data:[12500,14200,11800,15600,17200,21400,18420],
+        borderColor:gold2, backgroundColor:'rgba(217,164,65,0.15)',
+        fill:true, tension:0.35, pointBackgroundColor:gold2
+      }]
+    },
+    options:{
+      plugins:{legend:{display:false}},
+      scales:{
+        x:{ticks:{color:muted}, grid:{color:'rgba(255,255,255,0.05)'}},
+        y:{ticks:{color:muted}, grid:{color:'rgba(255,255,255,0.05)'}}
+      }
+    }
+  });
+  new Chart(document.getElementById('itemsChart'), {
+    type:'bar',
+    data:{
+      labels:['Filter Coffee','Cold Coffee','Pizza','Cake','Paneer Wrap'],
+      datasets:[{
+        label:'Orders',
+        data:[64,58,41,37,29],
+        backgroundColor:[gold2,gold,'#c1652f','#b5651d','#8a4a1f'],
+        borderRadius:6
+      }]
+    },
+    options:{
+      indexAxis:'y',
+      plugins:{legend:{display:false}},
+      scales:{
+        x:{ticks:{color:muted}, grid:{color:'rgba(255,255,255,0.05)'}},
+        y:{ticks:{color:muted}, grid:{display:false}}
+      }
+    }
+  });
+}
+</script>
+</body>
+</html>
